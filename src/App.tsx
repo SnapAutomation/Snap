@@ -6,6 +6,10 @@ import LoadingSpinner from './components/LoadingSpinner';
 import BottomNavigation from './components/BottomNavigation';
 import PostModal from './components/PostModal';
 import SearchModal from './components/SearchModal';
+import UserProfileModal from './components/UserProfileModal';
+import ImageUploadModal from './components/ImageUploadModal';
+import FloatingActionButton from './components/FloatingActionButton';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Post, Comment } from './types';
 import { mockPosts, generateMorePosts } from './data/mockData';
 import { getCommentsForPost } from './data/mockComments';
@@ -19,6 +23,23 @@ const App: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
+
+  // Mock user data
+  const currentUser = {
+    id: 'user-1',
+    username: 'MemeUser',
+    bio: 'Love creating and sharing memes! 🎭 Always looking for the next viral content.',
+  };
+
+  const userStats = {
+    postsCount: 42,
+    commentsCount: 156,
+    totalPoints: 3247,
+    joinDate: 'Dec 2023',
+    achievements: ['first-post', 'viral', 'commenter'],
+  };
 
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, inView } = useInView({
@@ -207,9 +228,30 @@ const App: React.FC = () => {
     });
   }, []);
 
+  // Handle image upload
+  const handleImageUpload = useCallback((imageData: string, title: string) => {
+    const newPost: Post = {
+      id: `user-${Date.now()}`,
+      title,
+      imageUrl: imageData,
+      points: 1,
+      commentsCount: 0,
+      tags: ['User Created', 'Meme'],
+      createdAt: 'now',
+      type: 'image',
+      userVote: 'up',
+    };
+    
+    setPosts(prev => [newPost, ...prev]);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onOpenSearch={() => setIsSearchOpen(true)} />
+    <ThemeProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+        <Header 
+          onOpenSearch={() => setIsSearchOpen(true)} 
+          onOpenProfile={() => setIsProfileOpen(true)}
+        />
       
       <main className="max-w-md mx-auto pb-20">
         {/* Posts Feed */}
@@ -240,11 +282,18 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-      />
+              {/* Bottom Navigation */}
+        <BottomNavigation 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+        />
+
+        {/* Floating Action Button */}
+        <FloatingActionButton
+          onCreateImage={() => setIsImageUploadOpen(true)}
+          onCreateText={() => alert('Text posts coming soon!')}
+          onCreateVideo={() => alert('Video posts coming soon!')}
+        />
 
       {/* Post Modal */}
       {selectedPost && (
@@ -266,7 +315,23 @@ const App: React.FC = () => {
         posts={posts}
         onSelectPost={(post) => handleOpenComments(post.id)}
       />
-    </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={currentUser}
+        stats={userStats}
+      />
+
+      {/* Image Upload Modal */}
+      <ImageUploadModal
+        isOpen={isImageUploadOpen}
+        onClose={() => setIsImageUploadOpen(false)}
+        onUpload={handleImageUpload}
+      />
+      </div>
+    </ThemeProvider>
   );
 };
 

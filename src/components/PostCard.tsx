@@ -29,20 +29,20 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote, onOpenComments }) => 
   };
 
   return (
-    <article className="post-card mb-4 mx-4">
+    <article className="post-card mb-4 mx-4 bg-white dark:bg-gray-800 transition-colors">
       {/* Post Header */}
       <div className="p-4 pb-3">
-        <h2 className="text-lg font-semibold text-gray-900 leading-tight mb-2">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight mb-2">
           {post.title}
         </h2>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
           <span>{post.createdAt}</span>
           <span>•</span>
           <div className="flex space-x-1">
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium"
+                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium"
               >
                 {tag}
               </span>
@@ -116,7 +116,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote, onOpenComments }) => 
             >
               <ChevronUp className="w-6 h-6" />
             </button>
-            <span className="text-sm font-semibold text-gray-700 min-w-[40px] text-center">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 min-w-[40px] text-center">
               {formatPoints(post.points)}
             </span>
             <button
