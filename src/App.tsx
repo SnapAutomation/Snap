@@ -4,8 +4,11 @@ import Header from './components/Header';
 import PostCard from './components/PostCard';
 import LoadingSpinner from './components/LoadingSpinner';
 import BottomNavigation from './components/BottomNavigation';
-import { Post } from './types';
+import PostModal from './components/PostModal';
+import SearchModal from './components/SearchModal';
+import { Post, Comment } from './types';
 import { mockPosts, generateMorePosts } from './data/mockData';
+import { getCommentsForPost } from './data/mockComments';
 
 const App: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,6 +16,9 @@ const App: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [activeTab, setActiveTab] = useState<'hot' | 'trending' | 'fresh'>('hot');
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, inView } = useInView({
@@ -94,11 +100,116 @@ const App: React.FC = () => {
         return post;
       })
     );
+
+    // Update selected post if it's the same post
+    if (selectedPost && selectedPost.id === postId) {
+      const updatedPost = posts.find(p => p.id === postId);
+      if (updatedPost) {
+        setSelectedPost({ ...updatedPost });
+      }
+    }
+  }, [posts, selectedPost]);
+
+  // Handle opening comments modal
+  const handleOpenComments = useCallback((postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      // Load comments if not already loaded
+      if (!postComments[postId]) {
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: getCommentsForPost(postId)
+        }));
+      }
+    }
+  }, [posts, postComments]);
+
+  // Handle adding comments
+  const handleAddComment = useCallback((postId: string, text: string, parentId?: string) => {
+    const newComment: Comment = {
+      id: `${postId}-${Date.now()}`,
+      text,
+      points: 1,
+      author: 'You',
+      createdAt: 'now'
+    };
+
+    setPostComments(prev => {
+      const comments = prev[postId] || [];
+      if (parentId) {
+        // Add as reply
+        const addReplyToComment = (comments: Comment[]): Comment[] => {
+          return comments.map(comment => {
+            if (comment.id === parentId) {
+              return {
+                ...comment,
+                replies: [...(comment.replies || []), newComment]
+              };
+            }
+            if (comment.replies) {
+              return {
+                ...comment,
+                replies: addReplyToComment(comment.replies)
+              };
+            }
+            return comment;
+          });
+        };
+        return {
+          ...prev,
+          [postId]: addReplyToComment(comments)
+        };
+      } else {
+        // Add as top-level comment
+        return {
+          ...prev,
+          [postId]: [newComment, ...comments]
+        };
+      }
+    });
+
+    // Update post comment count
+    setPosts(prev => 
+      prev.map(post => 
+        post.id === postId 
+          ? { ...post, commentsCount: post.commentsCount + 1 }
+          : post
+      )
+    );
+  }, []);
+
+  // Handle comment voting
+  const handleVoteComment = useCallback((postId: string, commentId: string, voteType: 'up' | 'down') => {
+    setPostComments(prev => {
+      const comments = prev[postId] || [];
+      const updateCommentVote = (comments: Comment[]): Comment[] => {
+        return comments.map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              points: comment.points + (voteType === 'up' ? 1 : -1)
+            };
+          }
+          if (comment.replies) {
+            return {
+              ...comment,
+              replies: updateCommentVote(comment.replies)
+            };
+          }
+          return comment;
+        });
+      };
+      return {
+        ...prev,
+        [postId]: updateCommentVote(comments)
+      };
+    });
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onOpenSearch={() => setIsSearchOpen(true)} />
       
       <main className="max-w-md mx-auto pb-20">
         {/* Posts Feed */}
@@ -108,6 +219,7 @@ const App: React.FC = () => {
               key={post.id} 
               post={post} 
               onVote={handleVote}
+              onOpenComments={handleOpenComments}
             />
           ))}
           
@@ -132,6 +244,27 @@ const App: React.FC = () => {
       <BottomNavigation 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
+      />
+
+      {/* Post Modal */}
+      {selectedPost && (
+        <PostModal
+          post={selectedPost}
+          comments={postComments[selectedPost.id] || []}
+          isOpen={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          onVote={handleVote}
+          onAddComment={handleAddComment}
+          onVoteComment={handleVoteComment}
+        />
+      )}
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        posts={posts}
+        onSelectPost={(post) => handleOpenComments(post.id)}
       />
     </div>
   );

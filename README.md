@@ -9,9 +9,13 @@ A modern, mobile-first clone of 9GAG built with React, TypeScript, and Tailwind 
 - ⬆️ **Voting System** - Upvote and downvote posts with visual feedback
 - 🎬 **Media Support** - Display images and videos with lazy loading
 - 🏷️ **Tags & Categories** - Organized content with tag system
+- 💬 **Comments System** - Full-featured commenting with nested replies
+- 🔍 **Search Functionality** - Search posts by title and tags with recent searches
+- 📄 **Post Details Modal** - View posts in detail with comments
+- 🧭 **Bottom Navigation** - Easy switching between Hot/Trending/Fresh
 - ⚡ **Fast Loading** - Optimized performance with React 18 and Vite
 - 🎨 **Modern UI** - Beautiful interface with Tailwind CSS
-- 🔍 **Responsive** - Works great on all screen sizes
+- 📱 **Responsive** - Works great on all screen sizes
 
 ## Tech Stack
 
@@ -42,11 +46,18 @@ A modern, mobile-first clone of 9GAG built with React, TypeScript, and Tailwind 
 ```
 src/
 ├── components/          # React components
-│   ├── Header.tsx      # Top navigation bar
+│   ├── Header.tsx      # Top navigation bar with search
 │   ├── PostCard.tsx    # Individual post component
+│   ├── PostModal.tsx   # Post detail modal with comments
+│   ├── CommentSection.tsx  # Comments with nested replies
+│   ├── SearchModal.tsx # Search functionality
+│   ├── BottomNavigation.tsx # Bottom tab navigation
 │   └── LoadingSpinner.tsx  # Loading animation
 ├── data/               # Mock data and utilities
-│   └── mockData.ts     # Sample posts and data generation
+│   ├── mockData.ts     # Sample posts and data generation
+│   └── mockComments.ts # Sample comments data
+├── utils/              # Utility functions
+│   └── constants.ts    # App configuration constants
 ├── types.ts            # TypeScript interfaces
 ├── App.tsx             # Main application component
 ├── main.tsx            # Application entry point

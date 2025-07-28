@@ -1,7 +1,11 @@
 import React from 'react';
 import { Search, Menu, Flame } from 'lucide-react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onOpenSearch: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onOpenSearch }) => {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
       <div className="flex items-center justify-between max-w-md mx-auto">
@@ -19,7 +23,10 @@ const Header: React.FC = () => {
         </div>
 
         {/* Search Button */}
-        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <button 
+          onClick={onOpenSearch}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
           <Search className="w-6 h-6 text-gray-700" />
         </button>
       </div>

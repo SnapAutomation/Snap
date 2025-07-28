@@ -6,9 +6,10 @@ import clsx from 'clsx';
 interface PostCardProps {
   post: Post;
   onVote: (postId: string, voteType: 'up' | 'down') => void;
+  onOpenComments: (postId: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onVote }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onVote, onOpenComments }) => {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -131,7 +132,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote }) => {
 
           {/* Other Actions */}
           <div className="flex items-center space-x-3">
-            <button className="flex items-center space-x-1 text-gray-500 hover:text-gray-700 transition-colors">
+            <button 
+              onClick={() => onOpenComments(post.id)}
+              className="flex items-center space-x-1 text-gray-500 hover:text-gray-700 transition-colors"
+            >
               <MessageCircle className="w-5 h-5" />
               <span className="text-sm font-medium">{post.commentsCount}</span>
             </button>
